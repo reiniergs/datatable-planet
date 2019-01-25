@@ -1,0 +1,14 @@
+<template>
+  Rows: {rowsLength}
+  <div class="slds-col" style="height: 400px;">
+    <lightning-datatable
+       columns={columns}
+       data={data}
+       key-field="id"
+       show-row-number-column
+       enable-infinite-loading={enableInfiniteLoading}
+       onloadmore={onLoadMore}
+       is-loading={isLoading}>
+    </lightning-datatable>
+  </div>  
+</template>
