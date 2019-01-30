@@ -1,14 +1,17 @@
 <template>
-  Rows: {rowsLength}
   <div class="slds-col" style="height: 400px;">
-    <lightning-datatable
+    <examples-custom-datatable
        columns={columns}
        data={data}
        key-field="id"
+       oncurrencychange={handleCurrencyChange}
+       draft-values={draftValues}
+       oncancel={handleOnCancel}
+       onsave={handleOnSave}
        show-row-number-column
        enable-infinite-loading={enableInfiniteLoading}
        onloadmore={onLoadMore}
        is-loading={isLoading}>
-    </lightning-datatable>
+    </examples-custom-datatable>
   </div>  
 </template>

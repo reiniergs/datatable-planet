@@ -5,6 +5,7 @@ const replace = require('rollup-plugin-replace');
 const cleaner = require('rollup-plugin-cleaner');
 const copy = require('rollup-plugin-cpy');
 const copySldsAssets = require('rollup-slds-plugin');
+const useMyIcon = require('./rollup/use-my-icon');
 
 module.exports = {
     input: path.resolve('src/index.js'),
@@ -26,6 +27,7 @@ module.exports = {
             },
         }),
         copySldsAssets({ dest: 'build/assets' }),
+        useMyIcon(),
         lwcCompiler({
             mapNamespaceFromPath: true,
             resolveFromPackages: true,

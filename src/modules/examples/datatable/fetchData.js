@@ -7,6 +7,8 @@ const recordMetadata = {
     closeAt: 'dateInFuture',
 };
 
+const currencies = ['USD', 'EUR', 'MXN'];
+
 export default function fetchDataHelper({ amountOfRecords }) {
     return fetch('https://data-faker.herokuapp.com/collection', {
         method: 'POST',
@@ -17,5 +19,13 @@ export default function fetchDataHelper({ amountOfRecords }) {
             amountOfRecords,
             recordMetadata,
         }),
-    }).then(response => response.json());
+    })
+    .then(response => response.json())
+    .then(collection => {
+        return collection.map((row) => ({
+            ...row,
+            currencyCode: 'EUR',
+            currencies,
+        }));
+    })
 }
