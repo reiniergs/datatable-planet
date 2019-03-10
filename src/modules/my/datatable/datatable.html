@@ -1,0 +1,40 @@
+<template>
+    <table
+        role="grid"
+        tabindex="0"
+        class="my-datatable-table slds-table slds-table_header-fixed slds-table_bordered slds-table_edit slds-table_resizable-cols">
+
+        <thead>
+            <tr class="slds-line-height_reset">
+                <template for:each={columns} for:item="column">
+                    <th
+                        class="slds-is-resizable slds-cell-fixed slds-has-button-menu"
+                        key={column.fieldName}
+                        scope="col"
+                        tabindex="-1"
+                        aria-label={column.label}>
+
+                        <span class="slds-text-title_caps slds-th__action">
+                            <span title={column.label} class="slds-truncate">
+                                {column.label}
+                            </span>
+                        </span>
+                    </th>
+                </template>
+            </tr>
+        </thead>
+        <tbody>
+            <template iterator:it={tableIterator}>
+                <tr key={it.value.id} class="slds-hint-parent" aria-selected="false" tabindex="-1">
+                    <template iterator:cellit={it.value}>
+                        <td key={cellit.value.field} role="gridcell" tabindex="-1" data-label={cellit.value.columnLabel}>
+                            <div class="slds-truncate">
+                                {cellit.value.field}
+                            </div>
+                        </td>
+                    </template>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+</template>
