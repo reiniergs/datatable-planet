@@ -1,6 +1,6 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 
-function  getValue(rowIndex, data, columns) {
+function getValue(rowIndex, data, columns) {
     let columnIndex = 0;
     return {
         [Symbol.iterator]() {
@@ -29,9 +29,13 @@ function  getValue(rowIndex, data, columns) {
 export default class Datatable extends LightningElement {
     @api data;
     @api columns;
+    @track headerStyles;
 
-    get cellData() {
-        return this.data[0].amount;
+    renderedCallback() {
+        const { width } = this.template.querySelector('th').getBoundingClientRect();
+        if (!this.headerStyles) {
+            this.headerStyles = `width: ${width}px;`;
+        }
     }
 
     createTableIterator(data, columns) {

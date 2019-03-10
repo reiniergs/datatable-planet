@@ -1,3 +1,16 @@
+.my-datatable-container {
+    height: 100%;
+    position: relative;
+}
+
+.my-datatable-scrollable-x-container {
+    height: 100%;
+}
+
 .my-datatable-table {
     table-layout: fixed;
+}
+
+.my-datatable-header-cell {
+    outline: none;
 }
