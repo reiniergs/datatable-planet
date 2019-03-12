@@ -1,32 +1,30 @@
 <template>
-    <div class="my-datatable-container">
-        <div class="my-datatable-scrollable-x-container slds-table_header-fixed_container slds-scrollable_x">
-            <div class="slds-scrollable_y">
+    <div class="datatable-container">
+        <div class="datatable-scrollable-x-container slds-table_header-fixed_container slds-scrollable_x">
+            <div class="slds-scrollable_y" style={tableStyles}>
                 <table
+                    style={tableStyles}
                     role="grid"
                     tabindex="0"
-                    class="my-datatable-table slds-table slds-table_header-fixed slds-table_bordered slds-table_edit slds-table_resizable-cols">
-            
+                    class="datatable-table slds-table slds-table_header-fixed slds-table_bordered slds-table_edit slds-table_resizable-cols">
+
                     <thead>
                         <tr class="slds-line-height_reset">
-                            <template for:each={columns} for:item="column">
+                            <template for:each={columns} for:item="column" for:index="colIndex">
                                 <th
                                     key={column.fieldName}
+                                    style={column.style}
                                     scope="col"
                                     tabindex="-1"
                                     aria-label={column.label}>
-                    
-                                    <div
-                                        style={headerStyles}
-                                        class="my-datatable-header-cell slds-text-title_caps slds-is-resizable slds-cell-fixed slds-has-button-menu"
-                                        tabindex="-1">
 
-                                        <span class="slds-th__action">
-                                            <span title={column.label} class="slds-truncate">
-                                                {column.label}
-                                            </span>
-                                        </span>
-                                    </div>
+                                    <my-primitive-header
+                                        col-index={colIndex}
+                                        label={column.label}
+                                        column-width={column.width}
+                                        min-column-width={minColumnWidth}
+                                        max-column-width={maxColumnWidth}>
+                                    </my-primitive-header>
                                 </th>
                             </template>
                         </tr>
