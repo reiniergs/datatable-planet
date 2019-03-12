@@ -1,0 +1,31 @@
+<template>
+    <div
+        style={headerStyles}
+        class="primitive-header-container slds-text-title_caps slds-is-resizable slds-cell-fixed slds-has-button-menu"
+        tabindex="-1">
+
+        <span class="slds-th__action">
+            <span title={label} class="slds-truncate">
+                {label}
+            </span>
+            <div>
+                <input
+                    type="range"
+                    value={columnWidth}
+                    min={minWidth}
+                    max={maxWidth}
+                    aria-label={label}
+                    class="slds-resizable__input slds-assistive-text"
+                    tabindex="-1">
+
+                <span
+                    class="slds-resizable__handle primitive-header-resize-bar"
+                    onmousedown={handleResize}
+                    style={resizeBarStyles}>
+
+                    <span class="slds-resizable__divider"></span>
+                </span>
+            </div>
+        </span>
+    </div>
+</template>

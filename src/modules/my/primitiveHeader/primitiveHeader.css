@@ -1,0 +1,7 @@
+.primitive-header-container {
+    outline: none;
+}
+
+.primitive-header-resize-bar {
+    will-change: transform;
+}
