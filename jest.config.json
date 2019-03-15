@@ -1,0 +1,29 @@
+{
+  "moduleFileExtensions": [
+    "js"
+  ],
+  "resolver": "@lwc/jest-resolver",
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/__test-disabled__/",
+    "/__integration__/"
+  ],
+  "preset": "@lwc/jest-preset",
+  "moduleNameMapper": {
+    "^(my|examples)/(.+)$": "<rootDir>/src/modules/$1/$2/$2"
+  },
+  "coverageThreshold": {
+    "global": {
+      "branches": 60,
+      "functions": 60,
+      "lines": 60
+    }
+  },
+  "coveragePathIgnorePatterns": [
+    "[.]css$",
+    "[.]html$"
+  ],
+  "snapshotSerializers": [
+    "@lwc/jest-serializer"
+  ]
+}
