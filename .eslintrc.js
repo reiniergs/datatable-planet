@@ -1,6 +1,9 @@
 module.exports = {
-    "extends": "airbnb-base",
-    "rules": {
-        "indent": [2, 4]
+    env: {
+        node: true,
     },
+    extends: ['plugin:lwc/extended'],
+    plugins: ['lwc'],
+    rules: {},
+    root: true,
 };

@@ -1,3 +1,4 @@
+
 class MixinBuilder {
     constructor(superclass) {
         this.superclass = superclass;
