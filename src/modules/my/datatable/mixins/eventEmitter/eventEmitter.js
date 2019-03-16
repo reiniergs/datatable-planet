@@ -1,31 +1,29 @@
 export const emit = Symbol('emit');
 export const subscribe = Symbol('subscribe');
+const privateEvents = Symbol('privateEvents');
 
 export default function EventEmitter(Base) {
     return class extends Base {
-        constructor() {
-            super();
-            this.events = {};
-        }
+        [privateEvents] = {};
 
         [emit](eventName, payload) {
-            const eventsArray = this.events[eventName];
+            const eventsArray = this[privateEvents][eventName];
             if (eventsArray) {
                 eventsArray.forEach((callback) => {
-                    setTimeout(() => callback(payload), 0);
+                    callback(payload);
                 });
             }
         }
 
         [subscribe](eventName, callback) {
-            if (this.events[eventName]) {
-                this.events[eventName].push(callback);
+            if (this[privateEvents][eventName]) {
+                this[privateEvents][eventName].push(callback);
             } else {
-                this.events[eventName] = [callback];
+                this[privateEvents][eventName] = [callback];
             }
 
             return () => {
-                this.events[eventName] = this.events[eventName]
+                this[privateEvents][eventName] = this[privateEvents][eventName]
                     .filter(eventFn => callback !== eventFn);
             };
         }
