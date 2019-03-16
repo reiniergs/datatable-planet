@@ -1,54 +1,70 @@
 import { LightningElement, api, track } from 'lwc';
+import mix from '../mixinBuilder/mixinBuilder';
+import eventEmitter from './mixins/eventEmitter/eventEmitter';
+import getIterator from './iterator';
+import {
+    updateColumnWidthsMetadata,
+    getColumnsWidths,
+    resetColumnWidths,
+    hasDefinedColumnsWidths,
+    adjustColumnsSize,
+    resizeColumnWithDelta,
+    getCustomerColumnWidths,
+} from './resizer';
+import {
+    normalizeColumns,
+    hasColumns,
+} from './columns';
 
-function getValue(rowIndex, data, columns) {
-    let columnIndex = 0;
-    return {
-        [Symbol.iterator]() {
-            return {
-                next() {
-                    let cellResult;
-                    if (columnIndex < columns.length) {
-                        cellResult = {
-                            value: {
-                                field: data[rowIndex][columns[columnIndex].fieldName],
-                                columnLabel: columns[columnIndex].label,
-                            },
-                            done: false,
-                        };
-                        columnIndex++;
-                        return cellResult;
-                    }
-                    return { done: true };
-                },
-            };
-        },
-        ...data[rowIndex],
-    };
+function setData(state, data) {
+    if (Array.isArray(data)) {
+        state.data = data;
+    } else {
+        state.data = [];
+    }
 }
 
-export default class Datatable extends LightningElement {
-    @api data;
+export default class Datatable extends mix(LightningElement).with(eventEmitter) {
     @api minColumnWidth = 50;
     @api maxColumnWidth = 1000;
-    @track _columns;
-    @track tableWidth;
-    columnsWidth = [];
+
+    @track state = {
+        columns: [],
+        columnWidths: [],
+        resizeColumnDisabled: false,
+        resizeStep: 10,
+        columnWidths: [],
+        tableWidth: 0,
+        minColumnWidth: 50,
+        maxColumnWidth: 1000,
+    };
 
     set columns(value) {
-        this._columns = Array.isArray(value) ? value : [];
+        const columns = Array.isArray(value) ? value : [];
+        this.updateColumns(columns);
     }
 
     @api
     get columns() {
-        return this._columns;
+        return this.state.columns;
+    }
+
+    set data(value) {
+        setData(this.state, value);
+    }
+
+    @api
+    get data() {
+        return this.state.data;
     }
 
     get tableIterator() {
-        return this.createTableIterator(this.data, this._columns);
+        return getIterator(this.data, this.columns);
     }
 
     get tableStyles() {
-        return this.tableWidth ? `width: ${this.tableWidth}px` : undefined;
+        const { tableWidth } = this.state;
+        return tableWidth !== 0 ? `width: ${tableWidth}px` : undefined;
     }
 
     connectedCallback() {
@@ -59,67 +75,38 @@ export default class Datatable extends LightningElement {
     }
 
     renderedCallback() {
-        if (!this.tableWidth) {
-            const initialTableWidth = this.template.querySelector('table').offsetWidth;
-            this.tableWidth = initialTableWidth;
-            const columnWidth = Math.round(initialTableWidth / this._columns.length);
-            this._columns = this._columns.map(column => ({
-                ...column,
-                width: columnWidth,
-                style: `width: ${columnWidth}px`,
-            }));
-            this.columnsWidth = this._columns.map((column) => column.width);
+        const { state } = this;
+        if (hasColumns(state) && !hasDefinedColumnsWidths(state)) {
+            adjustColumnsSize(this.template, state);
+            this.fireOnResize();
         }
-    }
-
-    createTableIterator(data, columns) {
-        let rowIndex = 0;
-        return {
-            [Symbol.iterator]() {
-                return {
-                    next() {
-                        let result;
-                        if (rowIndex < data.length) {
-                            result = {
-                                value: getValue(rowIndex, data, columns),
-                                done: false,
-                            };
-                            rowIndex++;
-                            return result;
-                        } 
-                        return { done: true };
-                    }
-                };
-            }
-        };
     }
 
     handleResizeColumn(event) {
         event.stopPropagation();
         const { colIndex, widthDelta } = event.detail;
         if (widthDelta !== 0) {
-            this.tableWidth = this.tableWidth + widthDelta;
-            this._columns = this._columns.map((column, index) => {
-                const isCurrentColumnResized = colIndex === index;
-                if (isCurrentColumnResized) {
-                    const newColumnWidth = column.width + widthDelta;
-                    return {
-                        ...column,
-                        width: newColumnWidth,
-                        style: `width: ${newColumnWidth}px`,
-                    };
-                }
-                return column;
-            });
-            this.columnsWidth = this._columns.map((column) => column.width);
+            resizeColumnWithDelta(this.state, colIndex, widthDelta);
             this.fireOnResize();
+        }
+    }
+
+    updateColumns(columns) {
+        const { state } = this;
+        normalizeColumns(state, columns);
+        updateColumnWidthsMetadata(state);
+
+        if (state.columns.length !== getColumnsWidths(state).length) {
+            resetColumnWidths(state);
+        } else if (hasDefinedColumnsWidths(state)) {
+            adjustColumnsSize(this.template, state);
         }
     }
 
     fireOnResize() {
         const event = new CustomEvent('resize', {
             detail: {
-                columnWidths: this.columnsWidth,
+                columnWidths: getCustomerColumnWidths(this.state),
             },
         });
         this.dispatchEvent(event);

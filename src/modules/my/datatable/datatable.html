@@ -10,20 +10,20 @@
 
                     <thead>
                         <tr class="slds-line-height_reset">
-                            <template for:each={columns} for:item="column" for:index="colIndex">
+                            <template for:each={state.columns} for:item="column" for:index="colIndex">
                                 <th
-                                    key={column.fieldName}
+                                    key={column.colKeyValue}
                                     style={column.style}
                                     scope="col"
-                                    tabindex="-1"
+                                    tabindex={column.tabIndex}
                                     aria-label={column.label}>
 
                                     <my-primitive-header
                                         col-index={colIndex}
                                         label={column.label}
-                                        column-width={column.width}
-                                        min-column-width={minColumnWidth}
-                                        max-column-width={maxColumnWidth}>
+                                        column-width={column.columnWidth}
+                                        min-column-width={column.minWidth}
+                                        max-column-width={column.maxWidth}>
                                     </my-primitive-header>
                                 </th>
                             </template>
