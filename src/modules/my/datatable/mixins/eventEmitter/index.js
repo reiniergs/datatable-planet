@@ -2,14 +2,14 @@ export const emit = Symbol('emit');
 export const subscribe = Symbol('subscribe');
 const privateEvents = Symbol('privateEvents');
 
-export default function EventEmitter(Base) {
+export default function eventEmitter(Base) {
     return class extends Base {
         [privateEvents] = {};
 
         [emit](eventName, payload) {
-            const eventsArray = this[privateEvents][eventName];
-            if (eventsArray) {
-                eventsArray.forEach((callback) => {
+            const callbackList = this[privateEvents][eventName];
+            if (callbackList) {
+                callbackList.forEach((callback) => {
                     callback(payload);
                 });
             }
@@ -22,7 +22,7 @@ export default function EventEmitter(Base) {
                 this[privateEvents][eventName] = [callback];
             }
 
-            return () => {
+            return function unsubcribe() {
                 this[privateEvents][eventName] = this[privateEvents][eventName]
                     .filter(eventFn => callback !== eventFn);
             };
