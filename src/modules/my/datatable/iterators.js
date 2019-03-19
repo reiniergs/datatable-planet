@@ -24,7 +24,7 @@ function getValue(rowIndex, data, columns) {
     };
 }
 
-export default function getIterator(data, columns) {
+export function getBodyIterator(data, columns) {
     let rowIndex = 0;
     return {
         [Symbol.iterator]() {
@@ -37,6 +37,31 @@ export default function getIterator(data, columns) {
                             done: false,
                         };
                         rowIndex++;
+                        return result;
+                    }
+                    return { done: true };
+                },
+            };
+        },
+    };
+}
+
+export function getHeadIterator(columns) {
+    let colIndex = 0;
+    return {
+        [Symbol.iterator]() {
+            return {
+                next() {
+                    let result;
+                    if (colIndex < columns.length) {
+                        result = {
+                            value: {
+                                ...columns[colIndex],
+                                colIndex,
+                            },
+                            done: false,
+                        };
+                        colIndex++;
                         return result;
                     }
                     return { done: true };

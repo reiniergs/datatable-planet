@@ -6,16 +6,12 @@ function getColumnDefaults() {
     };
 }
 
-export function hasColumns(state) {
-    return state.columns.length > 0;
-}
-
-export function normalizeColumns(state, columns) {
-    if (columns.length !== 0) {
+export function normalizeColumns(columns) {
+    if (Array.isArray(columns) && columns.length !== 0) {
         // workaround https://git.soma.salesforce.com/raptor/raptor/issues/763
         const normalizedColumns = Object.assign([], columns);
 
-        state.columns = normalizedColumns.map((column, index) => {
+        return normalizedColumns.map((column, index) => {
             const normalizedColumn = Object.assign(
                 getColumnDefaults(),
                 column,
@@ -25,7 +21,6 @@ export function normalizeColumns(state, columns) {
                 colKeyValue: generateColKeyValue(normalizedColumn, index),
             });
         });
-    } else {
-        state.columns = [];
     }
+    return [];
 }
