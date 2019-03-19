@@ -10,27 +10,27 @@
 
                     <thead>
                         <tr class="slds-line-height_reset">
-                            <template for:each={columns} for:item="column" for:index="colIndex">
+                            <template iterator:column={headIterator}>
                                 <th
-                                    key={column.fieldName}
-                                    style={column.style}
+                                    key={column.value.colKeyValue}
+                                    style={column.value.style}
                                     scope="col"
-                                    tabindex="-1"
-                                    aria-label={column.label}>
+                                    tabindex={column.value.tabIndex}
+                                    aria-label={column.value.label}>
 
                                     <my-primitive-header
-                                        col-index={colIndex}
-                                        label={column.label}
-                                        column-width={column.width}
-                                        min-column-width={minColumnWidth}
-                                        max-column-width={maxColumnWidth}>
+                                        col-index={column.value.colIndex}
+                                        label={column.value.label}
+                                        column-width={column.value.columnWidth}
+                                        min-column-width={column.value.minWidth}
+                                        max-column-width={column.value.maxWidth}>
                                     </my-primitive-header>
                                 </th>
                             </template>
                         </tr>
                     </thead>
                     <tbody>
-                        <template iterator:it={tableIterator}>
+                        <template iterator:it={bodyIterator}>
                             <tr key={it.value.id} class="slds-hint-parent" aria-selected="false" tabindex="-1">
                                 <template iterator:cellit={it.value}>
                                     <td key={cellit.value.field} role="gridcell" tabindex="-1" data-label={cellit.value.columnLabel}>

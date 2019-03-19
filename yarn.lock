@@ -6534,6 +6534,7 @@ resolve@1.1.7:
   resolved "http://npm.lwcjs.org/resolve/-/resolve-1.1.7/203114d82ad2c5ed9e8e0411b3932875e889e97b.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
   integrity sha1-IDEU2CrSxe2ejgQRs5ModeiJ6Xs=
 
+
 resolve@^1.10.0, resolve@^1.3.2, resolve@^1.5.0, resolve@^1.6.0, resolve@^1.8.1:
   version "1.10.0"
   resolved "http://npm.lwcjs.org/resolve/-/resolve-1.10.0/3bdaaeaf45cc07f375656dfd2e54ed0810b101ba.tgz#3bdaaeaf45cc07f375656dfd2e54ed0810b101ba"
