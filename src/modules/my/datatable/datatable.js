@@ -2,6 +2,7 @@ import { LightningElement, api } from 'lwc';
 import mix from 'my/mixinBuilder';
 import eventEmitter, { emit } from './mixins/eventEmitter/index';
 import table from './mixins/table/index';
+import { normalizeColumns } from './columns'
 
 function normalizeData(value) {
     if (Array.isArray(value)) {
@@ -23,9 +24,7 @@ export default class Datatable extends mix(LightningElement)
             const data = normalizeData(value);
             const columns = this[privateColumns];
             this[privateData] = data;
-            if (columns.length) {
-                this[emit]('DATA_CHANGED', { data, columns });
-            }
+            this[emit]('DATA_CHANGED', { data, columns });
         }
 
         get data() {
@@ -33,12 +32,10 @@ export default class Datatable extends mix(LightningElement)
         }
 
         @api set columns(value) {
-            const columns = normalizeData(value);
+            const columns = normalizeColumns(value);
             const data = this[privateData];
             this[privateColumns] = columns;
-            if (data.length) {
-                this[emit]('DATA_CHANGED', { data, columns });
-            }
+            this[emit]('COLUMNS_CHANGED', { data, columns });
         }
 
         get columns() {
