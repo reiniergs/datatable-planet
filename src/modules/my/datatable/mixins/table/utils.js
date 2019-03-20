@@ -92,7 +92,7 @@ function getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth) {
     }, initial);
 }
 
-export function adjustColumnsSize(params) {
+export function updateColumnsSize(params) {
     const { root, columns, minColumnWidth, maxColumnWidth } = params;
     const widthsMeta = getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth);
     const expectedTableWidth = getExpectedTableWidth(root, widthsMeta);
@@ -107,10 +107,14 @@ export function adjustColumnsSize(params) {
     });
 }
 
-export function updateTableWidth(columns) {
-    let tableWidth = 0;
+export function updateTableWidth(params) {
+    const { root, columns, minColumnWidth, maxColumnWidth } = params;
+    const widthsMeta = getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth);
+    const expectedTableWidth = getExpectedTableWidth(root, widthsMeta);
+
+    let columnsWidthSum = 0;
     columns.forEach((column) => {
-        tableWidth += column.columnWidth;
+        columnsWidthSum += column.columnWidth;
     });
-    return tableWidth;
+    return Math.min(expectedTableWidth, columnsWidthSum);
 }
