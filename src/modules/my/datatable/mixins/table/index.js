@@ -1,7 +1,7 @@
 import { track } from 'lwc';
 import { subscribe } from '../eventEmitter/index';
 import { getBodyIterator, getHeadIterator } from './iterators';
-import { adjustColumnsSize, updateTableWidth } from './utils';
+import { updateColumnsSize, updateTableWidth } from './utils';
 
 export default function table(Base) {
     return class extends Base {
@@ -16,26 +16,40 @@ export default function table(Base) {
             this[subscribe]('SET_COLUMNS_WIDTH', this.setColumnsWidth.bind(this))
         }
 
-        generateTableFromColumns({ data, columns }) {
+        setIterators(columns, data) {
             this.headIterator = getHeadIterator(columns);
             this.bodyIterator = getBodyIterator(data, columns);
         }
 
+        generateTable(columns, data) {
+            if (this.tableWidth === 0) {
+                return this.setIterators(columns, data);
+            }
+            return this.setColumnsWidth({ columns, data });
+        }
+
+        generateTableFromColumns({ data, columns }) {
+            this.generateTable(columns, data);
+        }
+
         generateTableFromData({ data, columns }) {
-            this.bodyIterator = getBodyIterator(data, columns);
+            this.generateTable(columns, data);
         }
 
         setColumnsWidth({ columns, data }) {
-            const resizedColumns = adjustColumnsSize({
+            const updatedColumns = updateColumnsSize({
                 root: this.template,
                 columns,
                 minColumnWidth: this.minColumnWidth,
                 maxColumnWidth: this.maxColumnWidth,
             });
-
-            this.tableWidth = updateTableWidth(resizedColumns);
-            this.headIterator = getHeadIterator(resizedColumns);
-            this.bodyIterator = getBodyIterator(data, resizedColumns);
+            this.tableWidth = updateTableWidth({
+                root: this.template,
+                columns: updatedColumns,
+                minColumnWidth: this.minColumnWidth,
+                maxColumnWidth: this.maxColumnWidth,
+            });
+            this.setIterators(updatedColumns, data);
         }
     }
 }
