@@ -1,64 +1,160 @@
-import { LightningElement, api } from 'lwc';
-import mix from 'my/mixinBuilder';
-import eventEmitter, { emit } from './mixins/eventEmitter/index';
-import table from './mixins/table/index';
-import { normalizeColumns } from './columns';
+import { LightningElement, api, track, unwrap } from 'lwc';
+import { debounce } from 'lightning/inputUtils';
+import HeadIterator from './headIterator'
+import BodyIterator from './bodyIterator';
+import { normalizeData } from './helpers/data'
+import { normalizeColumns } from './helpers/columns';
+import {
+    getColumnsMetaData,
+} from './helpers/resizer';
+import { ResizeSensor } from './helpers/resizeSensor';
 
-function normalizeData(value) {
-    if (Array.isArray(value)) {
-        return value;
-    }
-    return [];
-}
-
+const CONTAINER_SELELECTOR = '.slds-scrollable_x';
 const privateData = Symbol('privateData');
 const privateColumns = Symbol('privateColumns');
-const privateHasDefinedColumns = Symbol('privateHasDefinedColumns');
+const privateColumnsMetaData = Symbol('privateColumnsMetaData');
+const privateIsFirstTimeWithColumns = Symbol('privateIsFirstTimeWithColumns');
+const privateHasDetachedListeners = Symbol('privateHasDetachedListeners');
+const privateWidthObserver = Symbol('privateWidthObserver');
 
-export default class Datatable extends mix(LightningElement)
-    .with(eventEmitter, table) {
+export default class Datatable extends LightningElement {
+    [privateData] = [];
+    [privateColumns] = [];
+    [privateColumnsMetaData] = [];
+    [privateIsFirstTimeWithColumns] = true;
+    [privateHasDetachedListeners] = true;
 
-        [privateData] = [];
-        [privateColumns] = [];
-        [privateHasDefinedColumns] = false;
+    @track headIterator = [];
+    @track bodyIterator = [];
+    @track tableWidth = 0;
 
-        @api minColumnWidth = 50;
-        @api maxColumnWidth = 1000;
+    @api minColumnWidth = 50;
+    @api maxColumnWidth = 1000;
 
-        @api set data(value) {
-            const data = normalizeData(value);
-            const columns = this[privateColumns];
-            this[privateData] = data;
-            this[emit]('DATA_CHANGED', { data, columns });
+    @api set data(value) {
+        const data = normalizeData(value);
+        this[privateData] = data;
+        return this.generateBodyIterator();
+    }
+
+    get data() {
+        return this[privateData];
+    }
+
+    @api set columns(value) {
+        const columns = normalizeColumns(value, this.minColumnWidth, this.maxColumnWidth);
+        this[privateColumns] = columns;
+        return this.updateColumnsAndTableWidths();
+    }
+
+    get columns() {
+        return this[privateColumns];
+    }
+
+    get tableInlineStyles() {
+        const { tableWidth } = this;
+        return tableWidth !== 0 ? `width: ${tableWidth}px` : undefined;
+    }
+
+    renderedCallback() {
+        if (this[privateHasDetachedListeners]) {
+            this.attachListeners();
         }
-
-        get data() {
-            return this[privateData];
+        const hasColumns = this.columns.length > 0;
+        const isFirstTimeWithColumns = this[privateIsFirstTimeWithColumns];
+        if (hasColumns && isFirstTimeWithColumns) {
+            this.updateColumnsAndTableWidths();
+            this[privateIsFirstTimeWithColumns] = false;
         }
+    }
 
-        @api set columns(value) {
-            const columns = normalizeColumns(value);
-            const data = this[privateData];
-            this[privateColumns] = columns;
-            this[emit]('COLUMNS_CHANGED', { data, columns });
-        }
+    disconnectedCallback() {
+        this[privateHasDetachedListeners] = true;
+        const resizeTarget = unwrap(
+            this.template.querySelector('.dt-width-observer')
+        );
+        this[privateWidthObserver].detach(resizeTarget);
+    }
 
-        get columns() {
-            return this[privateColumns];
-        }
+    attachListeners() {
+        const resizeTarget = unwrap(
+            this.template.querySelector('.dt-width-observer')
+        );
+        this[privateWidthObserver] = new ResizeSensor(
+            resizeTarget,
+            debounce(() => {
+                if (!this[privateHasDetachedListeners]) {
+                    this.updateColumnsAndTableWidths();
+                }
+            }, 200)
+        );
+        this[privateHasDetachedListeners] = false;
+    }
 
-        get tableStyles() {
-            const { tableWidth } = this;
-            return tableWidth !== 0 ? `width: ${tableWidth}px` : undefined;
+    updateColumnsAndTableWidths() {
+        const {
+            columns,
+            minColumnWidth,
+            maxColumnWidth,
+        } = this;
+        const domTableWidth = this.getTableWidthFromDom();
+        const newColumnsMetaData = getColumnsMetaData({
+            columns,
+            columnsMetaData: this[privateColumnsMetaData],
+            domTableWidth,
+            minColumnWidth,
+            maxColumnWidth,
+        });
+        this[privateColumnsMetaData] = newColumnsMetaData;
+        if (this.hasFlexibleColumns()) {
+            this.tableWidth = domTableWidth;
         }
+        this.generateHeadIterator();
+    }
 
-        renderedCallback() {
-            const columns = this[privateColumns];
-            const hasDefinedColumns = this[privateHasDefinedColumns];
-            if (columns.length > 0 && !hasDefinedColumns) {
-                const data = this[privateData];
-                this[emit]('SET_COLUMNS_WIDTH', { columns, data });
-                this[privateHasDefinedColumns] = true;
-            }
+    generateHeadIterator() {
+        const columnsMetaData = this[privateColumnsMetaData];
+        this.headIterator = {
+            [Symbol.iterator]: () => new HeadIterator({
+                columns: this.columns,
+                columnsMetaData,
+            }),
+        };
+    }
+
+    generateBodyIterator() {
+        const { data, columns } = this;
+        this.bodyIterator = {
+            [Symbol.iterator]: () => new BodyIterator({
+                data,
+                columns,
+            }),
+        };
+    }
+
+    getTableWidthFromDom() {
+        const tableContainer = this.template.querySelector(CONTAINER_SELELECTOR);
+        if (tableContainer) {
+            return tableContainer.offsetWidth;
         }
+        return 0;
+    }
+
+    hasFlexibleColumns() {
+        return this[privateColumnsMetaData].some(column => column.isResized === false);
+    }
+
+    handleResizeColumn(event) {
+        event.stopPropagation();
+        const { colIndex, widthDelta } = event.detail;
+        if (widthDelta !== 0) {
+            const columnsMetaData = this[privateColumnsMetaData];
+            columnsMetaData[colIndex] = {
+                columnWidth: columnsMetaData[colIndex].columnWidth + widthDelta,
+                isResized: true,
+            };
+            this.generateHeadIterator();
+            this.tableWidth = this.tableWidth + widthDelta;
+        }
+    }
 }

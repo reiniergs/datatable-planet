@@ -1,9 +1,10 @@
 <template>
-    <div class="datatable-container">
+    <div lwc:dom="manual" class="dt-width-observer"></div>
+    <div class="datatable-container" onresizecol={handleResizeColumn}>
         <div class="datatable-scrollable-x-container slds-table_header-fixed_container slds-scrollable_x">
-            <div class="slds-scrollable_y" style={tableStyles}>
+            <div class="slds-scrollable_y" style={tableInlineStyles}>
                 <table
-                    style={tableStyles}
+                    style={tableInlineStyles}
                     role="grid"
                     tabindex="0"
                     class="datatable-table slds-table slds-table_header-fixed slds-table_bordered slds-table_edit slds-table_resizable-cols">
@@ -33,7 +34,12 @@
                         <template iterator:it={bodyIterator}>
                             <tr key={it.value.id} class="slds-hint-parent" aria-selected="false" tabindex="-1">
                                 <template iterator:cellit={it.value}>
-                                    <td key={cellit.value.field} role="gridcell" tabindex="-1" data-label={cellit.value.columnLabel}>
+                                    <td
+                                        key={cellit.value.field}
+                                        role="gridcell"
+                                        tabindex={cellit.value.tabIndex}
+                                        data-label={cellit.value.columnLabel}>
+
                                         <div class="slds-truncate">
                                             {cellit.value.field}
                                         </div>
