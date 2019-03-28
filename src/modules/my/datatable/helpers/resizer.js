@@ -1,24 +1,16 @@
-function getWidthStyle(pixels) {
+export function getWidthStyle(pixels) {
     return pixels > 0 ? `width: ${pixels}px` : '';
 }
 
-function updateColumnWidth(column, newWidth) {
-    return {
-        ...column,
-        columnWidth: newWidth,
-        style: getWidthStyle(newWidth),
-    };
-}
-
-function getColumnWidthFromDef(column) {
+export function getColumnWidthFromDef(column, columnMetaData) {
     let resizedWidth;
-    if (column.isResized) {
-        resizedWidth = column.columnWidth;
+    if (columnMetaData && columnMetaData.isResized) {
+        resizedWidth = columnMetaData.columnWidth;
     }
     return column.fixedWidth || resizedWidth || column.initialWidth;
 }
 
-function getFlexibleColumnWidth(widthsMeta, totalTableWidth) {
+function getExpectedFlexibleColumnWidth(widthsMeta, totalTableWidth) {
     const {
         totalFixedWidth,
         totalResizedWidth,
@@ -30,15 +22,6 @@ function getFlexibleColumnWidth(widthsMeta, totalTableWidth) {
     const avgFlexibleColumnWidth = Math.floor(totalFlexibleWidth / totalFlexibleColumns);
     const allowedSpace = Math.max(avgFlexibleColumnWidth, minColumnWidth);
     return Math.min(maxColumnWidth, allowedSpace);
-}
-
-function getDomWidth(element) {
-    return element.offsetWidth;
-}
-
-const CONTAINER_SEL = '.slds-scrollable_x';
-function getAvailableWidthFromDom(root) {
-    return getDomWidth(root.querySelector(CONTAINER_SEL));
 }
 
 function getMinExpectedTableWidth(widthsMeta) {
@@ -56,15 +39,24 @@ function hasNoFlexibleColumns(widthsMeta) {
     return widthsMeta.totalFlexibleColumns === 0;
 }
 
-function getExpectedTableWidth(root, widthsMeta) {
-    const availableWidth = getAvailableWidthFromDom(root);
+function getExpectedTableWidth(domTableWidth, widthsMeta) {
     const minExpectedTableWidth = getMinExpectedTableWidth(widthsMeta);
     return hasNoFlexibleColumns(widthsMeta)
         ? minExpectedTableWidth
-        : Math.max(minExpectedTableWidth, availableWidth);
+        : Math.max(minExpectedTableWidth, domTableWidth);
 }
 
-function getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth) {
+function getResizeState(columnMetaData) {
+    return columnMetaData ? columnMetaData.isResized : false;
+}
+
+function getTotalWidthsMetadata(params) {
+    const {
+        columns,
+        columnsMetaData,
+        minColumnWidth,
+        maxColumnWidth,
+    } = params;
     const initial = {
         totalFixedWidth: 0,
         totalFixedColumns: 0,
@@ -75,12 +67,13 @@ function getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth) {
         maxColumnWidth: maxColumnWidth,
     };
 
-    return columns.reduce((prev, col) => {
+    return columns.reduce((prev, col, index) => {
+        const currentColumnMetaData = columnsMetaData[index];
         if (col.fixedWidth) {
             prev.totalFixedWidth += col.fixedWidth;
             prev.totalFixedColumns += 1;
-        } else if (col.isResized) {
-            prev.totalResizedWidth += col.columnWidth;
+        } else if (getResizeState(currentColumnMetaData)) {
+            prev.totalResizedWidth += currentColumnMetaData.columnWidth;
             prev.totalResizedColumns += 1;
         } else if (col.initialWidth) {
             prev.totalResizedWidth += col.initialWidth;
@@ -92,29 +85,30 @@ function getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth) {
     }, initial);
 }
 
-export function updateColumnsSize(params) {
-    const { root, columns, minColumnWidth, maxColumnWidth } = params;
-    const widthsMeta = getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth);
-    const expectedTableWidth = getExpectedTableWidth(root, widthsMeta);
-
-    const expectedFlexibleColumnWidth = getFlexibleColumnWidth(
+export function getColumnsMetaData(params) {
+    const {
+        columns,
+        columnsMetaData,
+        domTableWidth,
+        minColumnWidth,
+        maxColumnWidth,
+    } = params;
+    const widthsMeta = getTotalWidthsMetadata({
+        columns,
+        columnsMetaData,
+        minColumnWidth,
+        maxColumnWidth,
+    });
+    const expectedTableWidth = getExpectedTableWidth(domTableWidth, widthsMeta);
+    const expectedFlexibleColumnWidth = getExpectedFlexibleColumnWidth(
         widthsMeta,
         expectedTableWidth,
     );
-    return columns.map((column) => {
-        const width = getColumnWidthFromDef(column) || expectedFlexibleColumnWidth;
-        return updateColumnWidth(column, width);
+    return columns.map((column, index) => {
+        const currentColumnMetaData = columnsMetaData[index];
+        return {
+            columnWidth: getColumnWidthFromDef(column, currentColumnMetaData) || expectedFlexibleColumnWidth,
+            isResized: getResizeState(currentColumnMetaData),
+        };
     });
-}
-
-export function updateTableWidth(params) {
-    const { root, columns, minColumnWidth, maxColumnWidth } = params;
-    const widthsMeta = getTotalWidthsMetadata(columns, minColumnWidth, maxColumnWidth);
-    const expectedTableWidth = getExpectedTableWidth(root, widthsMeta);
-
-    let columnsWidthSum = 0;
-    columns.forEach((column) => {
-        columnsWidthSum += column.columnWidth;
-    });
-    return Math.min(expectedTableWidth, columnsWidthSum);
 }

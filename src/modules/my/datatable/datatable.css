@@ -1,3 +1,8 @@
+.dt-width-observer {
+    width: 100%;
+    height: 0px;
+}
+
 .datatable-container {
     height: 100%;
     position: relative;
