@@ -31,7 +31,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template iterator:it={bodyIterator}>
+                        <template iterator:it={rowIterator}>
                             <tr key={it.value.id} class="slds-hint-parent" aria-selected="false" tabindex="-1">
                                 <template iterator:cellit={it.value}>
                                     <td
