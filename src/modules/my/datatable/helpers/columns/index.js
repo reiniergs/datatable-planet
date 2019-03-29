@@ -1,4 +1,4 @@
-import { generateColKeyValue } from './keys';
+import { generateColKeyValue } from '../keys/index';
 
 function getColumnDefaults() {
     return {

@@ -1,12 +1,10 @@
 import { LightningElement, api, track, unwrap } from 'lwc';
 import { debounce } from 'lightning/inputUtils';
-import HeadIterator from './headIterator'
-import BodyIterator from './bodyIterator';
-import { normalizeData } from './helpers/data'
-import { normalizeColumns } from './helpers/columns';
-import {
-    getColumnsMetaData,
-} from './helpers/resizer';
+import HeadIterator from './iterators/headIterator'
+import RowIterator from './iterators/rowIterator';
+import { normalizeData } from './helpers/data/index'
+import { normalizeColumns } from './helpers/columns/index';
+import { getColumnsMetaData } from './helpers/resizer/index';
 import { ResizeSensor } from './helpers/resizeSensor';
 
 const CONTAINER_SELELECTOR = '.slds-scrollable_x';
@@ -25,7 +23,7 @@ export default class Datatable extends LightningElement {
     [privateHasDetachedListeners] = true;
 
     @track headIterator = [];
-    @track bodyIterator = [];
+    @track rowIterator = [];
     @track tableWidth = 0;
 
     @api minColumnWidth = 50;
@@ -34,7 +32,7 @@ export default class Datatable extends LightningElement {
     @api set data(value) {
         const data = normalizeData(value);
         this[privateData] = data;
-        return this.generateBodyIterator();
+        return this.generateRowIterator();
     }
 
     get data() {
@@ -122,10 +120,10 @@ export default class Datatable extends LightningElement {
         };
     }
 
-    generateBodyIterator() {
+    generateRowIterator() {
         const { data, columns } = this;
-        this.bodyIterator = {
-            [Symbol.iterator]: () => new BodyIterator({
+        this.rowIterator = {
+            [Symbol.iterator]: () => new RowIterator({
                 data,
                 columns,
             }),

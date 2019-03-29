@@ -1,7 +1,7 @@
-import { getWidthStyle } from './helpers/resizer';
+import { getWidthStyle } from '../helpers/resizer/index';
 
 export default class HeaderIterator {
-    constructor({ columns, columnsMetaData }) {
+    constructor({ columns = [], columnsMetaData = {} }) {
         this.columns = columns;
         this.columnsMetaData = columnsMetaData;
         this.index = 0;
