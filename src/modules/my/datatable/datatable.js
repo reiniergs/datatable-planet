@@ -1,3 +1,4 @@
+/* eslint-disable lwc/valid-api */
 import { LightningElement, api, track, unwrap } from 'lwc';
 import { debounce } from 'lightning/inputUtils';
 import HeadIterator from './iterators/headIterator'

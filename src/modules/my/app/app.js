@@ -22,8 +22,10 @@ export default class DemoApp extends LightningElement {
     @track data = [];
     @track columns = columns;
 
-    async connectedCallback() {
-        const data = await fetchData({ amountOfRecords: 100 });
-        this.data = data;
+    connectedCallback() {
+        return fetchData({ amountOfRecords: 100 })
+            .then((data) => {
+                this.data = data;
+            });
     }
 }

@@ -10,7 +10,7 @@
         "watch": "rollup -c -w",
         "test": "jest -c jest.config.json src/",
         "itest": "wdio wdio.conf.js",
-        "lint": "eslint . --ext .js --max-warnings 0 --cache",
+        "lint": "eslint src --ext .js --max-warnings 0 --cache",
         "start:heroku": "yarn build && node server.js"
     },
     "devDependencies": {

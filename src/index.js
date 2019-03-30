@@ -1,3 +1,4 @@
+/* eslint-disable lwc/no-document-query */
 import { createElement } from 'lwc';
 import MyApp from 'my/app';
 

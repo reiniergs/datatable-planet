@@ -1,3 +1,4 @@
+/* eslint-disable */
 const fs = require('fs-extra');
 const xml2js = require('xml2js');
 const path = require('path');
