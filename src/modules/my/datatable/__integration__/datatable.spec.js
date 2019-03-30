@@ -1,4 +1,4 @@
-
+/* eslint-disable no-undef */
 describe('datatable itests', () => {
     it('should', () => {
         browser.url(URL);

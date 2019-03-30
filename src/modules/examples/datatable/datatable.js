@@ -1,6 +1,6 @@
+/* eslint-disable no-alert */
 import { LightningElement, track } from 'lwc';
 import fetchData from './fetchData';
-
 
 const columns = [
     { label: 'Label', fieldName: 'name' },
@@ -27,24 +27,28 @@ export default class ExamplesDatatable extends LightningElement {
     @track rowsLength = 0;
     @track draftValues = []; 
 
-    async connectedCallback() {
+    connectedCallback() {
         this.isLoading = true;
-        const data = await fetchData({ amountOfRecords: 100 });
-        this.data = data;
-        this.isLoading = false;
-        this.rowsLength = this.data.length;
+
+        return fetchData({ amountOfRecords: 100 })
+            .then((data) => {
+                this.data = data;
+                this.isLoading = false;
+                this.rowsLength = this.data.length;
+            });
     }
 
-    async onLoadMore() {
+    onLoadMore() {
         this.isLoading = true;
         this.enableInfiniteLoading = false;
 
-        const data = await fetchData({ amountOfRecords: 100 });
-        this.data = [...this.data, ...data];
-
-        this.isLoading = false;
-        this.enableInfiniteLoading = true;
-        this.rowsLength = this.data.length;
+        return fetchData({ amountOfRecords: 100 })
+            .then((data) => {
+                this.data = [...this.data, ...data];
+                this.isLoading = false;
+                this.enableInfiniteLoading = true;
+                this.rowsLength = this.data.length;
+            });
     }
 
     handleCurrencyChange(event)  {
@@ -53,11 +57,10 @@ export default class ExamplesDatatable extends LightningElement {
             ...this.draftValues,
             { id: rowId, currencyCode: value },
         ];
-        console.log(this.draftValues);
     }
 
     handleOnCancel() {
-        debugger;
+        
         this.draftValues = [];
     }
 

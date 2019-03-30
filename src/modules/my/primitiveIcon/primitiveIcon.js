@@ -1,3 +1,4 @@
+/* eslint-disable import/namespace */
 import { LightningElement, api } from 'lwc';
 import { classSet } from 'lightning/utils';
 import { normalizeString as normalize } from 'lightning/utilsPrivate';

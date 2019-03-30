@@ -1,4 +1,4 @@
-
+/* eslint-disable lwc/no-rest-parameter */
 class MixinBuilder {
     constructor(superclass) {
         this.superclass = superclass;

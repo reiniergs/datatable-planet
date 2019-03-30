@@ -1,4 +1,3 @@
-import { LightningElement } from 'lwc';
 import LightningDatatable from 'lightning/datatable';
 import pickListTemplate from './pickList.html';
 
